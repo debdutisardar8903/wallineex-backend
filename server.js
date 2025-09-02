@@ -16,8 +16,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Cashfree Configuration
-const CASHFREE_CLIENT_ID = process.env.CASHFREE_CLIENT_ID;
-const CASHFREE_CLIENT_SECRET = process.env.CASHFREE_CLIENT_SECRET;
+const CASHFREE_CLIENT_ID = process.env.CASHFREE_APP_ID;
+const CASHFREE_CLIENT_SECRET = process.env.CASHFREE_SECRET_KEY;
 const CASHFREE_BASE_URL = process.env.NODE_ENV === 'production' 
   ? 'https://api.cashfree.com/pg' 
   : 'https://sandbox.cashfree.com/pg';
@@ -37,8 +37,8 @@ app.post('/api/create-order', async (req, res) => {
     console.log('=== CREATE ORDER REQUEST ===');
     console.log('Request body:', req.body);
     console.log('Environment variables:');
-    console.log('CASHFREE_CLIENT_ID:', CASHFREE_CLIENT_ID ? 'Present' : 'Missing');
-    console.log('CASHFREE_CLIENT_SECRET:', CASHFREE_CLIENT_SECRET ? 'Present' : 'Missing');
+    console.log('CASHFREE_APP_ID:', CASHFREE_CLIENT_ID ? 'Present' : 'Missing');
+    console.log('CASHFREE_SECRET_KEY:', CASHFREE_CLIENT_SECRET ? 'Present' : 'Missing');
     console.log('NODE_ENV:', process.env.NODE_ENV);
     console.log('CASHFREE_BASE_URL:', CASHFREE_BASE_URL);
     
@@ -64,6 +64,8 @@ app.post('/api/create-order', async (req, res) => {
     // Validate environment variables
     if (!CASHFREE_CLIENT_ID || !CASHFREE_CLIENT_SECRET) {
       console.log('Missing Cashfree credentials');
+      console.log('CASHFREE_APP_ID value:', process.env.CASHFREE_APP_ID);
+      console.log('CASHFREE_SECRET_KEY value:', process.env.CASHFREE_SECRET_KEY);
       return res.status(500).json({
         success: false,
         error: 'Server configuration error: Missing Cashfree credentials'
