@@ -265,9 +265,15 @@ app.post('/api/webhook/cashfree', express.raw({ type: 'application/json' }), (re
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+  const serverUrl = process.env.NODE_ENV === 'production' 
+    ? 'https://wallineex-backend.onrender.com' 
+    : `http://localhost:${PORT}`;
+    
   res.json({ 
     success: true, 
     message: 'Cashfree Payment Server is running',
+    server_url: serverUrl,
+    environment: process.env.NODE_ENV || 'development',
     timestamp: new Date().toISOString()
   });
 });
@@ -281,18 +287,45 @@ app.use((error, req, res, next) => {
   });
 });
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'WALLINEXT Backend API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      create_order: '/api/create-order',
+      verify_payment: '/api/verify-payment',
+      webhook: '/api/webhook'
+    }
+  });
+});
+
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
-    error: 'Endpoint not found'
+    error: 'Endpoint not found',
+    available_endpoints: [
+      'GET /',
+      'GET /api/health',
+      'POST /api/create-order',
+      'POST /api/verify-payment',
+      'POST /api/webhook'
+    ]
   });
 });
 
 app.listen(PORT, () => {
+  const serverUrl = process.env.NODE_ENV === 'production' 
+    ? 'https://wallineex-backend.onrender.com' 
+    : `http://localhost:${PORT}`;
+    
   console.log(`🚀 Cashfree Payment Server running on port ${PORT}`);
-  console.log(`📡 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`📡 Health check: ${serverUrl}/api/health`);
   console.log(`💳 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌐 Server URL: ${serverUrl}`);
 });
 
 module.exports = app;
