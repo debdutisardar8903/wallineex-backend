@@ -89,7 +89,7 @@ app.post('/api/create-order', async (req, res) => {
       },
       order_meta: {
         return_url: `${req.headers.origin}/payment-success?order_id={order_id}`,
-        notify_url: `${req.protocol}://${req.get('host')}/api/webhook/cashfree`,
+        notify_url: `https://${req.get('host')}/api/webhook/cashfree`,
         payment_methods: 'cc,dc,nb,upi,paypal,app'
       },
       order_note: `Purchase of premium wallpaper: ${wallpaperName}`,
