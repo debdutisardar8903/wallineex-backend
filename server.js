@@ -233,7 +233,7 @@ app.post('/api/webhook/cashfree', express.raw({ type: 'application/json' }), (re
 
     // Verify webhook signature
     const expectedSignature = crypto
-      .createHmac('sha256', CASHFREE_SECRET_KEY)
+      .createHmac('sha256', CASHFREE_CLIENT_SECRET)
       .update(timestamp + rawBody)
       .digest('base64');
 
