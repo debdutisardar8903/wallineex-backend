@@ -12,7 +12,7 @@ app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:3000', 
     'https://wallineex.netlify.app',
-    'https://pixel-mart-store.netlify.app'
+    'https://wallineex.netlify.app'
   ],
   credentials: true
 }));
@@ -339,7 +339,7 @@ app.listen(PORT, () => {
   console.log(`💳 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🌐 Server URL: ${serverUrl}`);
   console.log(`🎨 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
-  console.log(`🔒 CORS Origins: pixel-mart-store.netlify.app, wallineex.netlify.app, localhost:3000`);
+  console.log(`🔒 CORS Origins: https://wallineex.netlify.app, wallineex.netlify.app, localhost:3000`);
 });
 
 module.exports = app;
