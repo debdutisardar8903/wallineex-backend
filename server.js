@@ -285,7 +285,7 @@ app.get('/api/health', (req, res) => {
     cors_origins: [
       process.env.FRONTEND_URL || 'http://localhost:3000', 
       'https://wallineex.netlify.app',
-      'https://pixel-mart-store.netlify.app'
+      'https://wallineex.netlify.app'
     ]
   });
 });
