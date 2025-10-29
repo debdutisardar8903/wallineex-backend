@@ -1,0 +1,11 @@
+{
+  "orderId": "WX1234567890123",
+  "orderAmount": 299,
+  "customerName": "Test User",
+  "customerEmail": "test@example.com",
+  "customerPhone": "9876543210",
+  "wallpaperName": "Test Wallpaper",
+  "wallpaperId": "wp_test_123",
+  "returnUrl": "http://localhost:3000/payment-success?order_id=WX1234567890123",
+  "notifyUrl": "http://localhost:5000/api/payment-webhook"
+}
