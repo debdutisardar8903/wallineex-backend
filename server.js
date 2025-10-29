@@ -16,8 +16,9 @@ const { logApiAccess, logServerStart } = require('./utils/logger');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Trust proxy for Render deployment (fixes X-Forwarded-For header issues)
-app.set('trust proxy', true);
+// Trust proxy for Render deployment (more secure configuration)
+// Trust only the first proxy (Render's load balancer)
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(securityHeaders);
@@ -73,6 +74,24 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
     cors: process.env.NODE_ENV === 'production' ? 'restricted' : 'open'
+  });
+});
+
+// Common typo redirects
+app.get('/helth', (req, res) => {
+  res.redirect(301, '/health');
+});
+
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Wallineex Cashfree Server API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      test: '/test',
+      api: '/api/*'
+    },
+    documentation: 'https://github.com/debdutisardar8903/wallineex-backend'
   });
 });
 
