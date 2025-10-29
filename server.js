@@ -16,6 +16,9 @@ const { logApiAccess, logServerStart } = require('./utils/logger');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust proxy for Render deployment (fixes X-Forwarded-For header issues)
+app.set('trust proxy', true);
+
 // Security middleware
 app.use(securityHeaders);
 app.use(requestSizeLimit);
