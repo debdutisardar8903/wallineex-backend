@@ -8,6 +8,16 @@ const { logRequest, logResponse } = require('../utils/logger');
 // Valid options: cc, dc, ppc, ccc, emi, paypal, upi, nb, app, paylater, applepay
 const SUPPORTED_PAYMENT_METHODS = 'cc,dc,nb,upi,paylater,emi';
 
+// Handle OPTIONS preflight for create-order
+router.options('/create-order', (req, res) => {
+  console.log('🔍 OPTIONS preflight for /create-order received');
+  console.log('🔍 Origin:', req.get('Origin'));
+  console.log('🔍 Access-Control-Request-Method:', req.get('Access-Control-Request-Method'));
+  console.log('🔍 Access-Control-Request-Headers:', req.get('Access-Control-Request-Headers'));
+  
+  res.status(200).end();
+});
+
 // Create Payment Order
 router.post('/create-order', async (req, res) => {
   try {
