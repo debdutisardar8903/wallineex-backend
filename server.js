@@ -37,19 +37,67 @@ if (process.env.NODE_ENV === 'production') {
   app.use('/api', generalRateLimit);
 }
 
-// CORS middleware - Allow all origins in development for easier testing
+// CORS middleware - More flexible configuration for debugging
 const allowedOrigins = process.env.NODE_ENV === 'production' ? [
   process.env.FRONTEND_URL || 'https://www.wallineex.store/',
   process.env.FRONTEND_URL_PRODUCTION || 'https://www.wallineex.store/',
-  'https://www.wallineex.store/'
-] : true; // Allow all origins in development
+  'https://www.wallineex.store/',
+  'https://www.wallineex.store',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000'
+] : [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'https://www.wallineex.store/',
+  'https://www.wallineex.store',
+  'https://wallineex-store.vercel.app',
+  // Allow any localhost port for development
+  /^http:\/\/localhost:\d+$/,
+  /^http:\/\/127\.0\.0\.1:\d+$/
+];
 
+// Enhanced CORS configuration
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list
+    if (Array.isArray(allowedOrigins)) {
+      const isAllowed = allowedOrigins.some(allowedOrigin => {
+        if (typeof allowedOrigin === 'string') {
+          return origin === allowedOrigin;
+        } else if (allowedOrigin instanceof RegExp) {
+          return allowedOrigin.test(origin);
+        }
+        return false;
+      });
+      
+      if (isAllowed) {
+        return callback(null, true);
+      }
+    } else if (allowedOrigins === true) {
+      return callback(null, true);
+    }
+    
+    // Log blocked origins for debugging
+    console.warn(`🚫 CORS blocked origin: ${origin}`);
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-webhook-timestamp', 'x-webhook-signature'],
-  optionsSuccessStatus: 200 // For legacy browser support
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'x-webhook-timestamp', 
+    'x-webhook-signature',
+    'Accept',
+    'Origin',
+    'X-Requested-With'
+  ],
+  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
+  optionsSuccessStatus: 200, // For legacy browser support
+  preflightContinue: false // Pass control to the next handler
 }));
 
 // Body parsing middleware
@@ -101,6 +149,21 @@ app.get('/test', (req, res) => {
     message: 'CORS test successful',
     origin: req.get('Origin'),
     timestamp: new Date().toISOString()
+  });
+});
+
+// CORS test endpoint with POST method
+app.post('/test-cors', (req, res) => {
+  console.log('🧪 CORS POST test received');
+  console.log('🧪 Origin:', req.get('Origin'));
+  console.log('🧪 Body:', req.body);
+  
+  res.json({
+    message: 'CORS POST test successful',
+    origin: req.get('Origin'),
+    body: req.body,
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
