@@ -158,13 +158,29 @@ const logApiAccess = (req, res, next) => {
   const method = req.method;
   const url = req.originalUrl;
   const ip = req.ip || req.connection.remoteAddress;
+  const origin = req.get('Origin') || 'No Origin';
+  const userAgent = req.get('User-Agent') || 'No User-Agent';
   
-  console.log(`📡 [${timestamp}] ${method} ${url} - IP: ${ip}`);
+  console.log(`📡 [${timestamp}] ${method} ${url} - IP: ${ip} - Origin: ${origin}`);
+  
+  // Log additional details for OPTIONS requests (CORS preflight)
+  if (method === 'OPTIONS') {
+    console.log(`🔍 [${timestamp}] CORS Preflight - Origin: ${origin}`);
+    console.log(`🔍 [${timestamp}] User-Agent: ${userAgent.substring(0, 100)}...`);
+    console.log(`🔍 [${timestamp}] Headers: ${JSON.stringify(req.headers, null, 2)}`);
+  }
   
   // Log response when it finishes
   const originalSend = res.send;
   res.send = function(data) {
-    console.log(`📤 [${timestamp}] ${method} ${url} - Status: ${res.statusCode}`);
+    const statusEmoji = res.statusCode >= 400 ? '❌' : res.statusCode >= 300 ? '⚠️' : '✅';
+    console.log(`📤 [${timestamp}] ${method} ${url} - Status: ${res.statusCode} ${statusEmoji}`);
+    
+    // Log error responses for debugging
+    if (res.statusCode >= 400) {
+      console.log(`🔴 [${timestamp}] Error Response: ${data.substring(0, 200)}...`);
+    }
+    
     originalSend.call(this, data);
   };
   
