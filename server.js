@@ -75,9 +75,19 @@ app.use(express.urlencoded({ extended: true }));
 // Cashfree Configuration
 const CASHFREE_CLIENT_ID = process.env.CASHFREE_APP_ID;
 const CASHFREE_CLIENT_SECRET = process.env.CASHFREE_SECRET_KEY;
-const CASHFREE_BASE_URL = process.env.NODE_ENV === 'production' 
+
+// Determine Cashfree environment based on credentials or explicit env var
+const CASHFREE_ENVIRONMENT = process.env.CASHFREE_ENVIRONMENT || 
+  (process.env.NODE_ENV === 'production' ? 'production' : 'sandbox');
+
+const CASHFREE_BASE_URL = CASHFREE_ENVIRONMENT === 'production'
   ? 'https://api.cashfree.com/pg' 
   : 'https://sandbox.cashfree.com/pg';
+
+console.log('Cashfree Configuration:');
+console.log('- Environment:', CASHFREE_ENVIRONMENT);
+console.log('- Base URL:', CASHFREE_BASE_URL);
+console.log('- NODE_ENV:', process.env.NODE_ENV);
 
 // Generate signature for Cashfree
 const generateSignature = (postData, timestamp) => {
@@ -438,9 +448,11 @@ app.get('/api/health', (req, res) => {
       'https://wallineex.store'
     ],
     cashfree_config: {
+      environment: CASHFREE_ENVIRONMENT,
       base_url: CASHFREE_BASE_URL,
       client_id_present: !!CASHFREE_CLIENT_ID,
-      client_secret_present: !!CASHFREE_CLIENT_SECRET
+      client_secret_present: !!CASHFREE_CLIENT_SECRET,
+      client_id_prefix: CASHFREE_CLIENT_ID ? CASHFREE_CLIENT_ID.substring(0, 8) + '...' : 'Missing'
     }
   });
 });
@@ -500,8 +512,10 @@ app.listen(PORT, () => {
   console.log(`🌐 Server URL: ${serverUrl}`);
   console.log(`🎨 Frontend URL: ${process.env.FRONTEND_URL || 'https://www.wallineex.store'}`);
   console.log(`🔒 CORS Origins: https://www.wallineex.store, wallineex.store, localhost:3000`);
+  console.log(`💰 Cashfree Environment: ${CASHFREE_ENVIRONMENT}`);
   console.log(`💰 Cashfree Base URL: ${CASHFREE_BASE_URL}`);
   console.log(`🔑 Cashfree Credentials: ${CASHFREE_CLIENT_ID ? 'Present' : 'Missing'}`);
+  console.log(`🔑 Cashfree Client ID: ${CASHFREE_CLIENT_ID ? CASHFREE_CLIENT_ID.substring(0, 8) + '...' : 'Missing'}`);
 });
 
 module.exports = app;
