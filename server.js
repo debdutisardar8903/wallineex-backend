@@ -38,12 +38,36 @@ setInterval(cleanupCache, 5 * 60 * 1000);
 
 // Middleware
 app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL || 'http://localhost:3000', 
-    'https://www.wallineex.store',
-    'https://wallineex.store'
-  ],
-  credentials: true
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      process.env.FRONTEND_URL || 'http://localhost:3000',
+      'https://www.wallineex.store',
+      'https://wallineex.store',
+      'http://localhost:3000',
+      'http://127.0.0.1:3000'
+    ];
+    
+    // Check if the origin is in the allowed list
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    
+    // For Netlify deployments, allow any subdomain of netlify.app
+    if (origin.includes('.netlify.app')) {
+      return callback(null, true);
+    }
+    
+    console.log('CORS blocked origin:', origin);
+    const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+    return callback(new Error(msg), false);
+  },
+  credentials: false, // Changed to false for better compatibility
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+  optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -68,12 +92,15 @@ const generateSignature = (postData, timestamp) => {
 app.post('/api/create-order', async (req, res) => {
   try {
     console.log('=== CREATE ORDER REQUEST ===');
+    console.log('Request origin:', req.get('origin'));
+    console.log('Request headers:', req.headers);
     console.log('Request body:', req.body);
     console.log('Environment variables:');
     console.log('CASHFREE_APP_ID:', CASHFREE_CLIENT_ID ? 'Present' : 'Missing');
     console.log('CASHFREE_SECRET_KEY:', CASHFREE_CLIENT_SECRET ? 'Present' : 'Missing');
     console.log('NODE_ENV:', process.env.NODE_ENV);
     console.log('CASHFREE_BASE_URL:', CASHFREE_BASE_URL);
+    console.log('FRONTEND_URL:', process.env.FRONTEND_URL);
     
     const { 
       orderId, 
