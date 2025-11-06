@@ -428,7 +428,7 @@ app.post('/api/clear-cache', (req, res) => {
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   const serverUrl = process.env.NODE_ENV === 'production' 
-    ? 'wallineex-backend-production.up.railway.app' 
+    ? 'https://wallineex-backend.onrender.com' 
     : `http://localhost:${PORT}`;
     
   res.json({ 
@@ -503,7 +503,7 @@ app.use('*', (req, res) => {
 
 app.listen(PORT, () => {
   const serverUrl = process.env.NODE_ENV === 'production' 
-    ? 'wallineex-backend-production.up.railway.app' 
+    ? 'https://wallineex-backend.onrender.com' 
     : `http://localhost:${PORT}`;
     
   console.log(`🚀 Wallineex Payment Server running on port ${PORT}`);
