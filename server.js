@@ -144,8 +144,40 @@ app.post('/api/create-order', async (req, res) => {
 
     // Generate alphanumeric customer ID from email
     const generateCustomerId = (email) => {
-      return email.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+      return email.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase().substring(0, 50);
     };
+
+    // Sanitize product name to avoid special characters
+    const sanitizeProductName = (name) => {
+      if (!name) return 'Digital Product';
+      return name.replace(/[^a-zA-Z0-9\s\-_]/g, '').trim().substring(0, 100) || 'Digital Product';
+    };
+
+    // Validate and format phone number for Cashfree
+    const formatPhoneNumber = (phone) => {
+      // Remove all non-digits
+      const cleanPhone = phone.replace(/\D/g, '');
+      // Ensure it's 10 digits (remove country code if present)
+      if (cleanPhone.length === 12 && cleanPhone.startsWith('91')) {
+        return cleanPhone.substring(2);
+      }
+      if (cleanPhone.length === 10) {
+        return cleanPhone;
+      }
+      throw new Error('Invalid phone number format');
+    };
+
+    // Validate and format phone number
+    let formattedPhone;
+    try {
+      formattedPhone = formatPhoneNumber(customerPhone);
+    } catch (phoneError) {
+      console.log('Phone number validation error:', phoneError.message);
+      return res.status(400).json({
+        success: false,
+        error: `Invalid phone number: ${phoneError.message}`
+      });
+    }
 
     const orderData = {
       order_id: orderId,
@@ -155,19 +187,14 @@ app.post('/api/create-order', async (req, res) => {
         customer_id: generateCustomerId(customerEmail),
         customer_name: customerName,
         customer_email: customerEmail,
-        customer_phone: customerPhone
+        customer_phone: formattedPhone
       },
       order_meta: {
         return_url: returnUrl || `${process.env.FRONTEND_URL || 'https://www.wallineex.store'}/payment-success?order_id={order_id}`,
         notify_url: notifyUrl || `${req.protocol}://${req.get('host')}/api/payment-webhook`,
         payment_methods: 'cc,dc,nb,upi,paypal,app'
       },
-      order_note: `Purchase from Wallineex Store: ${wallpaperName || 'Digital Product'}`,
-      order_tags: {
-        product_id: wallpaperId,
-        product_name: wallpaperName,
-        store: 'wallineex'
-      }
+      order_note: `Purchase from Wallineex Store: ${sanitizeProductName(wallpaperName)}`
     };
 
     const headers = {
